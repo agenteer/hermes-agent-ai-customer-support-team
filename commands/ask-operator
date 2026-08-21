@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Atlas runs this to put a decision in front of the operator.
+set -euo pipefail
+SUBJECT="${1:?usage: ask-operator <subject> <question>}"
+QUESTION="${2:?usage: ask-operator <subject> <question>}"
+TOKEN="$(grep -m1 '^TELEGRAM_BOT_TOKEN=' ~/.hermes/.env | cut -d= -f2-)"
+: "${TOKEN:?TELEGRAM_BOT_TOKEN not found in ~/.hermes/.env}"
+echo "[$(date +%H:%M)] PENDING OPERATOR: ${SUBJECT} — ${QUESTION}" >> ~/marveno/log.md
+curl -fsS "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+  --data-urlencode "chat_id=<GROUP_ID>" \
+  --data-urlencode "message_thread_id=<TOPIC_ESCALATIONS>" \
+  --data-urlencode "text=🔺 Operator decision needed — ${SUBJECT}
+
+${QUESTION}
+
+Reply in this topic with your decision." >/dev/null
+echo "receipt: operator asked about ${SUBJECT} at $(date +%H:%M)"

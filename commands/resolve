@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Atlas runs this to send a decision back down to Sage.
+# The delivery instruction routes by the ticket's own channel.
+set -euo pipefail
+SUBJECT="${1:?usage: resolve <subject> <decision>}"
+DECISION="${2:?usage: resolve <subject> <decision>}"
+echo "[$(date +%H:%M)] RESOLVED: ${SUBJECT} — ${DECISION}" >> ~/marveno/log.md
+TOKEN="$(grep -m1 '^TELEGRAM_BOT_TOKEN=' ~/.hermes/.env | cut -d= -f2-)"
+curl -fsS "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+  --data-urlencode "chat_id=<GROUP_ID>" \
+  --data-urlencode "message_thread_id=<TOPIC_DESKLOG>" \
+  --data-urlencode "text=📥 Atlas → Sage: ${SUBJECT} — ${DECISION}" >/dev/null || true
+timeout 300 hermes -p sage chat -q "DECISION from Atlas on ticket ${SUBJECT}: ${DECISION}. Write the customer reply in your own words and deliver it on the channel the ticket arrived on. First run: himalaya envelope list --account support — if the ticket is there as an email from the customer, send your reply with: tell-customer-email <envelope-id> '<your reply>' — otherwise send it with: tell-customer '<your reply>'. Single quotes either way. Then append exactly one line to ~/marveno/log.md in this format: [HH:MM] REPLIED: ${SUBJECT} — <one-line summary>. Do not escalate." >/dev/null
+echo "receipt: resolved ${SUBJECT} at $(date +%H:%M)"

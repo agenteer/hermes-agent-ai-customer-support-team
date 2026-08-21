@@ -1,0 +1,33 @@
+# Append this block to ~/.hermes/config.yaml (the installer already wrote that file — append, never replace):
+#
+#     cat ~/hermes-agent-ai-customer-support-team/gateway-block.yaml >> ~/.hermes/config.yaml
+#
+# Run the sed line from COMMANDS.md (step 5) first so the placeholders carry your group and room numbers.
+# Both top-level keys (platforms, gateway) sit at column 0, and profile_routes stays LAST in the file:
+# step 5 of the build appends one more route (the catch-all) as a bare list item, and step 8 adds the
+# email home address inside the platforms block. Both are in COMMANDS.md. This file is the step-5 shape
+# on purpose — the video shows what happens to an unrouted room before adding the catch-all.
+
+platforms:
+  telegram:
+    home_channel:
+      platform: telegram
+      chat_id: '<GROUP_ID>'
+      thread_id: '<TOPIC_SUPPORT>'
+      name: support-inbox
+gateway:
+  multiplex_profiles: true
+  profile_routes:
+    - name: support-inbox-to-sage
+      platform: telegram
+      chat_id: '<GROUP_ID>'
+      thread_id: '<TOPIC_SUPPORT>'
+      profile: sage
+    - name: escalations-to-atlas
+      platform: telegram
+      chat_id: '<GROUP_ID>'
+      thread_id: '<TOPIC_ESCALATIONS>'
+      profile: atlas
+    - name: all-inbound-email-to-sage
+      platform: email
+      profile: sage

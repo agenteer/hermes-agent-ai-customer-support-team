@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Sage runs this to hand a ticket up to Atlas.
+set -euo pipefail
+SUBJECT="${1:?usage: escalate <subject> <reason>}"
+REASON="${2:?usage: escalate <subject> <reason>}"
+if tail -n 1 ~/marveno/log.md 2>/dev/null | grep -qF "RESOLVED: ${SUBJECT}"; then
+  echo "refused: '${SUBJECT}' was just resolved by Atlas — deliver that decision to the customer, do not re-escalate it" >&2
+  exit 1
+fi
+echo "[$(date +%H:%M)] ESCALATED: ${SUBJECT} — ${REASON}" >> ~/marveno/log.md
+TOKEN="$(grep -m1 '^TELEGRAM_BOT_TOKEN=' ~/.hermes/.env | cut -d= -f2-)"
+curl -fsS "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+  --data-urlencode "chat_id=<GROUP_ID>" \
+  --data-urlencode "message_thread_id=<TOPIC_DESKLOG>" \
+  --data-urlencode "text=📤 Sage → Atlas: ${SUBJECT} — ${REASON}" >/dev/null || true
+nohup timeout 300 hermes -p atlas chat -q "Escalation: ${SUBJECT}. Why it is above Sage: ${REASON}. Follow your escalation-review skill." </dev/null >>~/marveno/escalate.err 2>&1 &
+echo "receipt: escalated ${SUBJECT} to atlas at $(date +%H:%M) (atlas is reviewing in the background)"

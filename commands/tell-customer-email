@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Sage runs this to reply to an email ticket, inside the customer's own thread.
+# Email sibling of tell-customer. Needs the email adapter and himalaya configured.
+set -euo pipefail
+ID="${1:?usage: tell-customer-email <envelope-id> <message>}"
+MESSAGE="${2:?usage: tell-customer-email <envelope-id> <message>}"
+FROM="$(grep -m1 '^EMAIL_ADDRESS=' ~/.hermes/.env | cut -d= -f2-)"
+: "${FROM:?EMAIL_ADDRESS not found in ~/.hermes/.env — add EMAIL_ADDRESS to your .env}"
+himalaya message reply "${ID}" --account support --send --from "${FROM}" --body "${MESSAGE}" >/dev/null
+echo "receipt: customer emailed in-thread (reply to envelope ${ID}) at $(date +%H:%M)"

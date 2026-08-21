@@ -1,0 +1,26 @@
+# ~/.config/himalaya/config.toml — FALLBACK ONLY.
+#
+# Running `himalaya` with no config starts its wizard, which discovers Gmail's servers from the
+# address, tests the login, and writes this file for you (himalaya v2.1.0). Use the wizard.
+# Two things to know about what it writes:
+#   1. It names the account after the provider (`[accounts.gmail]`). The commands in this repo
+#      call the account `support` — rename the header to `[accounts.support]`.
+#   2. Sent-folder aliases are not needed: `message reply --send` only sends; it files nothing
+#      to Sent unless you pass `--save`, and Gmail keeps its own copy of SMTP-sent mail.
+#
+# If the wizard cannot run, this is the v2 form that works. Holds the mail password in plain text —
+# fine for a disposable demo mailbox, wrong for anything real (himalaya's password.command reads
+# from a keyring instead).
+
+[accounts.support]
+default = true
+email = "<DESK_EMAIL>"
+display-name = "Marveno Support"
+
+imap.server = "imaps://imap.gmail.com:993"
+imap.sasl.plain.username = "<DESK_EMAIL>"
+imap.sasl.plain.password.raw = "<APP_PASSWORD>"
+
+smtp.server = "smtps://smtp.gmail.com:465"
+smtp.sasl.plain.username = "<DESK_EMAIL>"
+smtp.sasl.plain.password.raw = "<APP_PASSWORD>"

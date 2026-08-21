@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Sage runs this to send a message to the customer in support-inbox.
+set -euo pipefail
+MESSAGE="${1:?usage: tell-customer <message>}"
+TOKEN="$(grep -m1 '^TELEGRAM_BOT_TOKEN=' ~/.hermes/.env | cut -d= -f2-)"
+: "${TOKEN:?TELEGRAM_BOT_TOKEN not found in ~/.hermes/.env}"
+curl -fsS "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+  --data-urlencode "chat_id=<GROUP_ID>" \
+  --data-urlencode "message_thread_id=<TOPIC_SUPPORT>" \
+  --data-urlencode "text=${MESSAGE}" >/dev/null
+echo "receipt: customer told at $(date +%H:%M)"
